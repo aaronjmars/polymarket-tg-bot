@@ -1,4 +1,4 @@
-import { addSubscriber, removeSubscriber, getSubscribers } from "../lib/polymarket";
+import { addSubscriber, removeSubscriber, getSubscribers } from "../lib/polymarket.js";
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
