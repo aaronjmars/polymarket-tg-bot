@@ -1,4 +1,4 @@
-import { addSubscriber, removeSubscriber, getSubscribers } from "../lib/polymarket.js";
+import { addSubscriber, removeSubscriber, getSubscribers, fetchEvents, formatMessage } from "../lib/polymarket.js";
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
@@ -14,15 +14,24 @@ interface TelegramUpdate {
   };
 }
 
-async function sendMessage(chatId: number, text: string): Promise<void> {
+async function sendMessage(chatId: number, text: string, markdown = false): Promise<void> {
   await fetch(`${TELEGRAM_API}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       chat_id: chatId,
       text,
+      ...(markdown && { parse_mode: "MarkdownV2", disable_web_page_preview: true }),
     }),
   });
+}
+
+async function sendLatestMarkets(chatId: number): Promise<void> {
+  const events = await fetchEvents(10);
+  for (const event of events.reverse()) {
+    await sendMessage(chatId, formatMessage(event), true);
+    await new Promise((r) => setTimeout(r, 100));
+  }
 }
 
 export async function POST(request: Request) {
@@ -48,8 +57,10 @@ export async function POST(request: Request) {
             "You'll receive notifications whenever new prediction markets are created.\n\n" +
             "Commands:\n" +
             "/stop - Unsubscribe from alerts\n" +
-            "/status - Check subscription status"
+            "/status - Check subscription status\n\n" +
+            "Here are the 10 latest markets:"
         );
+        await sendLatestMarkets(chatId);
       } else {
         await sendMessage(chatId, "✅ You're already subscribed! Use /stop to unsubscribe.");
       }
