@@ -13,6 +13,14 @@ export interface PolymarketEvent {
   markets: PolymarketMarket[];
 }
 
+export interface Subscriber {
+  chatId: number;
+  username?: string;
+  firstName?: string;
+  subscribedAt: string;
+}
+
 export interface BotState {
   lastSeenId: number;
+  subscribers: Subscriber[];
 }
