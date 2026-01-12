@@ -2,7 +2,6 @@
   "name": "polymarket-telegram-bot",
   "version": "1.0.0",
   "description": "Telegram bot that monitors and posts new Polymarket markets",
-  "main": "src/bot.ts",
   "scripts": {
     "start": "tsx src/bot.ts",
     "dev": "tsx watch src/bot.ts"
@@ -10,6 +9,7 @@
   "keywords": ["polymarket", "telegram", "bot"],
   "license": "MIT",
   "dependencies": {
+    "@upstash/redis": "^1.28.0",
     "grammy": "^1.21.1"
   },
   "devDependencies": {

@@ -5,7 +5,7 @@ import type { PolymarketEvent, BotState, Subscriber } from "./types.js";
 
 // Configuration
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL_MINUTES || "5") * 60 * 1000;
+const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL_MINUTES || "1") * 60 * 1000;
 const GAMMA_API = "https://gamma-api.polymarket.com";
 const STATE_FILE = join(import.meta.dirname, "../.state.json");
 
