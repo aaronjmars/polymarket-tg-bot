@@ -1,4 +1,3 @@
-import type { NextRequest } from "next/server";
 import {
   fetchEvents,
   fetchNewEvents,
@@ -59,7 +58,7 @@ async function broadcast(message: string): Promise<{ success: number; failed: nu
   return { success, failed, toRemove };
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   // Verify cron secret (optional but recommended)
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

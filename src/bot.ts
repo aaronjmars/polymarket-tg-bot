@@ -117,7 +117,7 @@ function formatMessage(event: PolymarketEvent): string {
 
 // Main bot logic
 async function main() {
-  const bot = new Bot(TELEGRAM_TOKEN);
+  const bot = new Bot(TELEGRAM_TOKEN!);
   let state = loadState();
 
   console.log("🤖 Polymarket Telegram Bot starting...");

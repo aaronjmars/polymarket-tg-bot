@@ -1,4 +1,3 @@
-import type { NextRequest } from "next/server";
 import { addSubscriber, removeSubscriber, getSubscribers } from "../lib/polymarket";
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
@@ -26,7 +25,7 @@ async function sendMessage(chatId: number, text: string): Promise<void> {
   });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const update: TelegramUpdate = await request.json();
     const message = update.message;

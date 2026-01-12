@@ -8,9 +8,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "lib": ["ES2022", "DOM"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "api/**/*", "lib/**/*"],
   "exclude": ["node_modules"]
 }
