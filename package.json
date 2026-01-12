@@ -1,6 +1,7 @@
 {
   "name": "polymarket-telegram-bot",
   "version": "1.0.0",
+  "type": "module",
   "description": "Telegram bot that monitors and posts new Polymarket markets",
   "scripts": {
     "start": "tsx src/bot.ts",
