@@ -9,6 +9,14 @@ const redis = new Redis({
 export interface PolymarketMarket {
   question: string;
   outcomePrices: string;
+  outcomes: string;
+  volume: string;
+  liquidity: string;
+  volume24hr: number;
+  volume1wk: number;
+  volume1mo: number;
+  startDate: string;
+  endDate: string;
 }
 
 export interface PolymarketEvent {
@@ -18,6 +26,14 @@ export interface PolymarketEvent {
   description: string;
   volume: string;
   liquidity: string;
+  startDate: string;
+  endDate: string;
+  creationDate: string;
+  resolutionSource: string;
+  commentCount: number;
+  new: boolean;
+  featured: boolean;
+  restricted: boolean;
   markets: PolymarketMarket[];
 }
 
@@ -106,30 +122,99 @@ export async function fetchNewEvents(): Promise<PolymarketEvent[]> {
     .reverse();
 }
 
-// Message formatting
-export function formatMessage(event: PolymarketEvent): string {
-  const url = `https://polymarket.com/event/${event.slug}`;
-  const volume = parseFloat(event.volume || "0").toLocaleString("en-US", {
+// Helper to escape MarkdownV2 special characters
+function escapeMarkdown(text: string): string {
+  return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, "\\$&");
+}
+
+// Format currency
+function formatCurrency(value: string | number): string {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(num) || num === 0) return "$0";
+  return num.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0,
   });
+}
 
-  let pricesText = "";
-  if (event.markets?.[0]?.outcomePrices) {
+// Format date
+function formatDate(dateStr: string): string {
+  if (!dateStr) return "N/A";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
+// Message formatting
+export function formatMessage(event: PolymarketEvent): string {
+  const url = `https://polymarket.com/event/${event.slug}`;
+  const market = event.markets?.[0];
+
+  // Title
+  const escapedTitle = escapeMarkdown(event.title);
+
+  // Outcomes and prices
+  let outcomesText = "";
+  if (market?.outcomePrices && market?.outcomes) {
     try {
-      const prices = JSON.parse(event.markets[0].outcomePrices);
-      if (prices.length >= 2) {
-        const yesPrice = (parseFloat(prices[0]) * 100).toFixed(0);
-        const noPrice = (parseFloat(prices[1]) * 100).toFixed(0);
-        pricesText = `\n📊 Yes: ${yesPrice}% / No: ${noPrice}%`;
-      }
+      const prices = JSON.parse(market.outcomePrices);
+      const outcomes = JSON.parse(market.outcomes);
+      const outcomeLines = outcomes.map((outcome: string, i: number) => {
+        const price = prices[i] ? (parseFloat(prices[i]) * 100).toFixed(1) : "0";
+        return `  • ${escapeMarkdown(outcome)}: ${price}%`;
+      });
+      outcomesText = `\n📊 *Outcomes:*\n${outcomeLines.join("\n")}`;
     } catch {
-      // Skip prices if parsing fails
+      // Skip if parsing fails
     }
   }
 
-  const escapedTitle = event.title.replace(/[_*[\]()~`>#+=|{}.!-]/g, "\\$&");
+  // Volume & Liquidity
+  const volume = formatCurrency(event.volume);
+  const liquidity = formatCurrency(event.liquidity);
+  const volume24h = market?.volume24hr ? formatCurrency(market.volume24hr) : null;
 
-  return `🆕 *New Market*\n\n*${escapedTitle}*${pricesText}\n💰 Volume: ${volume}\n\n🔗 [View on Polymarket](${url})`;
+  // Dates
+  const endDate = formatDate(event.endDate);
+  const createdDate = formatDate(event.creationDate);
+
+  // Description (truncate if too long)
+  let description = event.description || "";
+  if (description.length > 300) {
+    description = description.substring(0, 297) + "...";
+  }
+  const escapedDesc = escapeMarkdown(description);
+
+  // Resolution source
+  const resolutionSource = event.resolutionSource
+    ? `\n🔍 *Resolution:* ${escapeMarkdown(event.resolutionSource)}`
+    : "";
+
+  // Tags
+  const tags = [];
+  if (event.new) tags.push("🆕 New");
+  if (event.featured) tags.push("⭐ Featured");
+  if (event.restricted) tags.push("🔒 Restricted");
+  const tagsText = tags.length > 0 ? `\n${tags.join(" • ")}` : "";
+
+  // Build message
+  return `🆕 *NEW MARKET*\n\n` +
+    `*${escapedTitle}*\n\n` +
+    `📝 ${escapedDesc}\n` +
+    outcomesText + `\n\n` +
+    `💰 *Volume:* ${escapeMarkdown(volume)}\n` +
+    `💧 *Liquidity:* ${escapeMarkdown(liquidity)}\n` +
+    (volume24h ? `📈 *24h Volume:* ${escapeMarkdown(volume24h)}\n` : "") +
+    `\n📅 *Created:* ${escapeMarkdown(createdDate)}\n` +
+    `⏰ *End Date:* ${escapeMarkdown(endDate)}` +
+    resolutionSource +
+    tagsText + `\n\n` +
+    `🔗 [View on Polymarket](${url})`;
 }
