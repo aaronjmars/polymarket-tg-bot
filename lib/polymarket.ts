@@ -102,7 +102,17 @@ export async function removeSubscribers(chatIds: number[]): Promise<void> {
 // Polymarket API
 const GAMMA_API = "https://gamma-api.polymarket.com";
 
-export async function fetchEvents(limit: number = 10): Promise<PolymarketEvent[]> {
+// Filter out spam/noise markets
+function filterEvents(events: PolymarketEvent[]): PolymarketEvent[] {
+  return events.filter((e) => {
+    const title = e.title.toLowerCase();
+    // Filter out "Up or Down" price prediction markets
+    if (title.includes("up or down")) return false;
+    return true;
+  });
+}
+
+async function fetchEventsRaw(limit: number): Promise<PolymarketEvent[]> {
   const url = `${GAMMA_API}/events?order=id&ascending=false&closed=false&limit=${limit}`;
   const res = await fetch(url);
 
@@ -113,11 +123,18 @@ export async function fetchEvents(limit: number = 10): Promise<PolymarketEvent[]
   return res.json();
 }
 
+export async function fetchEvents(limit: number = 10): Promise<PolymarketEvent[]> {
+  // Fetch more to account for filtered results
+  const events = await fetchEventsRaw(limit * 5);
+  return filterEvents(events).slice(0, limit);
+}
+
 export async function fetchNewEvents(): Promise<PolymarketEvent[]> {
   const lastSeenId = await getLastSeenId();
-  const events = await fetchEvents(20);
+  // Fetch more raw events to find new ones after filtering
+  const events = await fetchEventsRaw(100);
 
-  return events
+  return filterEvents(events)
     .filter((e) => parseInt(e.id) > lastSeenId)
     .reverse();
 }
