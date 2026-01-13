@@ -68,10 +68,10 @@ async function sendFilterMenu(chatId: number, hiddenCategories: FilterCategory[]
   const text =
     `⚙️ *Filter Settings*\n\n` +
     `Toggle categories to show/hide them from your alerts\\.\n\n` +
-    `🟢 = Visible \\| 🔴 = Hidden\n\n` +
+    `🟢 \\= Visible \\| 🔴 \\= Hidden\n\n` +
     `Currently hiding: ${hiddenCount === 0 ? "Nothing" : hiddenCount + " categories"}`;
 
-  await fetch(`${TELEGRAM_API}/sendMessage`, {
+  const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -81,6 +81,10 @@ async function sendFilterMenu(chatId: number, hiddenCategories: FilterCategory[]
       reply_markup: buildFilterKeyboard(hiddenCategories),
     }),
   });
+
+  if (!res.ok) {
+    console.error("sendFilterMenu failed:", await res.text());
+  }
 }
 
 async function updateFilterMenu(
@@ -92,7 +96,7 @@ async function updateFilterMenu(
   const text =
     `⚙️ *Filter Settings*\n\n` +
     `Toggle categories to show/hide them from your alerts\\.\n\n` +
-    `🟢 = Visible \\| 🔴 = Hidden\n\n` +
+    `🟢 \\= Visible \\| 🔴 \\= Hidden\n\n` +
     `Currently hiding: ${hiddenCount === 0 ? "Nothing" : hiddenCount + " categories"}`;
 
   await fetch(`${TELEGRAM_API}/editMessageText`, {
