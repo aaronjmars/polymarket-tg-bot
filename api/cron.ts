@@ -6,6 +6,8 @@ import {
   setLastSeenId,
   getSubscribers,
   removeSubscribers,
+  shouldShowEvent,
+  PolymarketEvent,
 } from "../lib/polymarket.js";
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
@@ -37,13 +39,23 @@ async function sendMessage(chatId: number, text: string): Promise<boolean> {
   }
 }
 
-async function broadcast(message: string): Promise<{ success: number; failed: number; toRemove: number[] }> {
+async function broadcast(
+  event: PolymarketEvent,
+  message: string
+): Promise<{ success: number; failed: number; skipped: number; toRemove: number[] }> {
   const subscribers = await getSubscribers();
   let success = 0;
   let failed = 0;
+  let skipped = 0;
   const toRemove: number[] = [];
 
   for (const subscriber of subscribers) {
+    // Check if subscriber wants to see this event based on their filters
+    if (!shouldShowEvent(event, subscriber.hiddenCategories)) {
+      skipped++;
+      continue;
+    }
+
     const sent = await sendMessage(subscriber.chatId, message);
     if (sent) {
       success++;
@@ -55,7 +67,7 @@ async function broadcast(message: string): Promise<{ success: number; failed: nu
     await new Promise((r) => setTimeout(r, 50));
   }
 
-  return { success, failed, toRemove };
+  return { success, failed, skipped, toRemove };
 }
 
 export async function GET(request: Request) {
@@ -97,7 +109,7 @@ export async function GET(request: Request) {
 
     for (const event of newEvents) {
       const message = formatMessage(event);
-      const { success, failed, toRemove } = await broadcast(message);
+      const { success, failed, skipped, toRemove } = await broadcast(event, message);
 
       allToRemove.push(...toRemove);
 
@@ -107,8 +119,10 @@ export async function GET(request: Request) {
       results.push({
         eventId: event.id,
         title: event.title,
+        tags: event.tags?.map((t) => t.label) || [],
         success,
         failed,
+        skipped,
       });
 
       // Delay between events

@@ -7,7 +7,11 @@
     "start": "tsx src/bot.ts",
     "dev": "tsx watch src/bot.ts"
   },
-  "keywords": ["polymarket", "telegram", "bot"],
+  "keywords": [
+    "polymarket",
+    "telegram",
+    "bot"
+  ],
   "license": "MIT",
   "dependencies": {
     "@upstash/redis": "^1.28.0",
@@ -16,6 +20,6 @@
   "devDependencies": {
     "@types/node": "^20.10.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.9.3"
   }
 }

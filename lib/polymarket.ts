@@ -19,6 +19,11 @@ export interface PolymarketMarket {
   endDate: string;
 }
 
+export interface PolymarketTag {
+  label: string;
+  slug: string;
+}
+
 export interface PolymarketEvent {
   id: string;
   title: string;
@@ -35,13 +40,27 @@ export interface PolymarketEvent {
   featured: boolean;
   restricted: boolean;
   markets: PolymarketMarket[];
+  tags: PolymarketTag[];
 }
+
+// Available filter categories
+export const FILTER_CATEGORIES = [
+  "Games",
+  "Sports",
+  "Politics",
+  "Culture",
+  "Finance",
+  "Crypto",
+] as const;
+
+export type FilterCategory = (typeof FILTER_CATEGORIES)[number];
 
 export interface Subscriber {
   chatId: number;
   username?: string;
   firstName?: string;
   subscribedAt: string;
+  hiddenCategories?: FilterCategory[];
 }
 
 // KV Keys
@@ -97,6 +116,40 @@ export async function removeSubscribers(chatIds: number[]): Promise<void> {
   const subscribers = await getSubscribers();
   const filtered = subscribers.filter((s) => !chatIds.includes(s.chatId));
   await redis.set(SUBSCRIBERS_KEY, filtered);
+}
+
+export async function getSubscriber(chatId: number): Promise<Subscriber | undefined> {
+  const subscribers = await getSubscribers();
+  return subscribers.find((s) => s.chatId === chatId);
+}
+
+export async function updateSubscriberFilters(
+  chatId: number,
+  hiddenCategories: FilterCategory[]
+): Promise<boolean> {
+  const subscribers = await getSubscribers();
+  const index = subscribers.findIndex((s) => s.chatId === chatId);
+  if (index === -1) return false;
+
+  subscribers[index].hiddenCategories = hiddenCategories;
+  await redis.set(SUBSCRIBERS_KEY, subscribers);
+  return true;
+}
+
+// Check if an event should be shown to a subscriber based on their filters
+export function shouldShowEvent(event: PolymarketEvent, hiddenCategories: FilterCategory[] = []): boolean {
+  if (hiddenCategories.length === 0) return true;
+
+  const eventTags = event.tags?.map((t) => t.label.toLowerCase()) || [];
+
+  for (const category of hiddenCategories) {
+    const categoryLower = category.toLowerCase();
+    if (eventTags.some((tag) => tag.includes(categoryLower) || categoryLower.includes(tag))) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // Polymarket API
