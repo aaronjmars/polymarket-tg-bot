@@ -217,7 +217,34 @@ export function formatMessage(event: PolymarketEvent): string {
   const escapedTitle = escapeMarkdown(event.title);
   const endDate = formatDate(event.endDate);
 
+  // Volume
+  let volumeText = "";
+  const vol = parseFloat(event.volume || "0");
+  if (vol > 0) {
+    const formatted = vol.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    });
+    volumeText = `\n💰 Volume: ${escapeMarkdown(formatted)}`;
+  }
+
+  // Outcome prices from the first market
+  let pricesText = "";
+  if (event.markets?.[0]?.outcomePrices) {
+    try {
+      const prices = JSON.parse(event.markets[0].outcomePrices);
+      if (prices.length >= 2) {
+        const yesPrice = (parseFloat(prices[0]) * 100).toFixed(0);
+        const noPrice = (parseFloat(prices[1]) * 100).toFixed(0);
+        pricesText = `\n📊 Yes: ${yesPrice}% / No: ${noPrice}%`;
+      }
+    } catch {
+      // Skip prices if parsing fails
+    }
+  }
+
   return `🆕 *${escapedTitle}*\n\n` +
-    `⏰ ${escapeMarkdown(endDate)}\n\n` +
+    `⏰ ${escapeMarkdown(endDate)}${pricesText}${volumeText}\n\n` +
     `🔗 [View on Polymarket](${url})`;
 }
