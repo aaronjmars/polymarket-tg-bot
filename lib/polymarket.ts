@@ -144,7 +144,7 @@ export function shouldShowEvent(event: PolymarketEvent, hiddenCategories: Filter
 
   for (const category of hiddenCategories) {
     const categoryLower = category.toLowerCase();
-    if (eventTags.some((tag) => tag.includes(categoryLower) || categoryLower.includes(tag))) {
+    if (eventTags.some((tag) => tag.includes(categoryLower))) {
       return false;
     }
   }
