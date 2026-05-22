@@ -12,6 +12,7 @@ import {
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
+const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
 
 interface TelegramUpdate {
   message?: {
@@ -124,6 +125,14 @@ async function answerCallbackQuery(callbackQueryId: string, text?: string): Prom
 }
 
 export async function POST(request: Request) {
+  // Verify Telegram webhook secret (optional but recommended)
+  if (WEBHOOK_SECRET) {
+    const headerSecret = request.headers.get("x-telegram-bot-api-secret-token");
+    if (headerSecret !== WEBHOOK_SECRET) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+  }
+
   try {
     const update: TelegramUpdate = await request.json();
 

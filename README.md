@@ -65,6 +65,7 @@ cp .env.example .env
 |----------|-------------|----------|
 | `TELEGRAM_BOT_TOKEN` | Bot token from @BotFather | Yes |
 | `CRON_SECRET` | Random secret to secure the cron endpoint | Recommended |
+| `TELEGRAM_WEBHOOK_SECRET` | Secret token validated against the `X-Telegram-Bot-Api-Secret-Token` header on every webhook request | Recommended |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL | Serverless only |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token | Serverless only |
 
@@ -90,6 +91,13 @@ Replace `YOUR_BOT_TOKEN` and `YOUR_VERCEL_URL`:
 
 ```bash
 curl "https://api.telegram.org/botYOUR_BOT_TOKEN/setWebhook?url=YOUR_VERCEL_URL/api/webhook"
+```
+
+If you set `TELEGRAM_WEBHOOK_SECRET`, pass the same value as `secret_token` so
+Telegram echoes it back in the `X-Telegram-Bot-Api-Secret-Token` header:
+
+```bash
+curl "https://api.telegram.org/botYOUR_BOT_TOKEN/setWebhook?url=YOUR_VERCEL_URL/api/webhook&secret_token=YOUR_WEBHOOK_SECRET"
 ```
 
 ### Running locally (alternative)
