@@ -5,7 +5,8 @@
   "description": "Telegram bot that monitors and posts new Polymarket markets",
   "scripts": {
     "start": "tsx src/bot.ts",
-    "dev": "tsx watch src/bot.ts"
+    "dev": "tsx watch src/bot.ts",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "polymarket",
