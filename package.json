@@ -16,7 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "@upstash/redis": "^1.38.0",
-    "grammy": "^1.44.0"
+    "grammy": "^1.45.1"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
