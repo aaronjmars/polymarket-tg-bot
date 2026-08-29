@@ -135,3 +135,7 @@ The local version uses file-based state and long-polling (no webhook required).
 ## License
 
 MIT
+
+---
+
+Built by [Aaron Elijah Mars](https://aaronjmars.com), founder of Aeon and MiroShark · [@aaronjmars](https://github.com/aaronjmars)
