@@ -15,12 +15,12 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@upstash/redis": "^1.38.2",
-    "grammy": "^1.45.1"
+    "@upstash/redis": "^1.38.3",
+    "grammy": "^1.46.0"
   },
   "devDependencies": {
-    "@types/node": "^26.2.0",
-    "tsx": "^4.23.12",
+    "@types/node": "^26.4.0",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }
 }
