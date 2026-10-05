@@ -40,7 +40,7 @@ Uses long-polling with file-based state:
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.11+ (the local bot uses `import.meta.dirname`)
 - A Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
 - [Upstash Redis](https://upstash.com) account (for serverless deployment)
 - [Vercel](https://vercel.com) account (for serverless deployment)
@@ -48,8 +48,8 @@ Uses long-polling with file-based state:
 ### 1. Clone and install
 
 ```bash
-git clone <repo-url>
-cd polymarket-telegram-bot
+git clone https://github.com/aaronjmars/polymarket-tg-bot.git
+cd polymarket-tg-bot
 npm install
 ```
 
@@ -68,6 +68,7 @@ cp .env.example .env
 | `TELEGRAM_WEBHOOK_SECRET` | Secret token validated against the `X-Telegram-Bot-Api-Secret-Token` header on every webhook request | Recommended |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL | Serverless only |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token | Serverless only |
+| `POLL_INTERVAL_MINUTES` | Polling interval in minutes (default `1`) | Local only, optional |
 
 ### 3. Deploy to Vercel
 
@@ -81,9 +82,12 @@ Set environment variables in Vercel dashboard or via CLI:
 ```bash
 vercel env add TELEGRAM_BOT_TOKEN
 vercel env add CRON_SECRET
+vercel env add TELEGRAM_WEBHOOK_SECRET
 vercel env add UPSTASH_REDIS_REST_URL
 vercel env add UPSTASH_REDIS_REST_TOKEN
 ```
+
+The cron in `vercel.json` runs every minute. Vercel only allows per-minute crons on paid plans; on Hobby, change the schedule to once a day or use the local mode.
 
 ### 4. Set up Telegram webhook
 
@@ -110,6 +114,9 @@ npm run dev
 
 # Production
 npm start
+
+# Type check
+npm run typecheck
 ```
 
 The local version uses file-based state and long-polling (no webhook required).
